@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anni Zimina</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #f3f2ef;
+    color: #333;
+    text-align: center;
+  }
+  .card {
+    padding: 2rem;
+    max-width: 320px;
+  }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #0a66c2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  a {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #0a66c2;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 24px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner"></div>
+  <p>Opening Anni's LinkedIn profile…</p>
+  <noscript>
+    <a href="https://www.linkedin.com/in/a-zimina/">Open Profile</a>
+  </noscript>
+</div>
+
+<script>
+(function() {
+  var WEB_URL  = 'https://www.linkedin.com/in/a-zimina/';
+  var SLUG     = 'a-zimina';
+
+  // Detect platform
+  var ua = navigator.userAgent || '';
+  var isIOS     = /iPhone|iPad|iPod/i.test(ua);
+  var isAndroid = /Android/i.test(ua);
+
+  // Strategy:
+  // 1. Try app deep-link scheme (fires immediately)
+  // 2. After short delay, redirect to web URL as fallback
+  //    (if app opened, this page is backgrounded and timeout won't fire visibly)
+
+  var appUrl;
+
+  if (isIOS) {
+    // linkedin:// scheme — tries to open LinkedIn app directly
+    // Multiple variants for compatibility across LinkedIn app versions
+    appUrl = 'linkedin://in/' + SLUG;
+  } else if (isAndroid) {
+    // Android intent URI — Chrome will try to launch the app, 
+    // falls back to browser_fallback_url if app not installed
+    appUrl = 'intent://www.linkedin.com/in/' + SLUG +
+             '/#Intent;scheme=https;package=com.linkedin.android;' +
+             'S.browser_fallback_url=' + encodeURIComponent(WEB_URL) + ';end';
+  }
+
+  if (appUrl) {
+    // Attempt app open
+    window.location.href = appUrl;
+
+    // Fallback: if app didn't open after 1.5s, go to web
+    // On Android intent:// handles its own fallback, so this is mainly for iOS
+    setTimeout(function() {
+      // Only redirect if page is still visible (app didn't open)
+      if (!document.hidden) {
+        window.location.href = WEB_URL;
+      }
+    }, 1500);
+  } else {
+    // Desktop or unknown — just go to web
+    window.location.href = WEB_URL;
+  }
+
+  // Also listen for visibility change — if user comes back to this tab,
+  // offer a manual link
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      // User came back — app may not have been installed
+      // Show manual fallback after a moment
+      setTimeout(function() {
+        if (!document.hidden) {
+          document.querySelector('.spinner').style.display = 'none';
+          document.querySelector('p').innerHTML =
+            'LinkedIn app not found.<br>' +
+            '<a href="' + WEB_URL + '">Open in browser</a>';
+        }
+      }, 500);
+    }
+  });
+})();
+</script>
+</body>
+</html>
